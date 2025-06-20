@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Repository
 public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot, Long> {
@@ -26,6 +27,14 @@ public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot
             @Param("date") LocalDate date,
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime
+    );
+
+    List<AppointmentSlot> findByDoctorIdAndDate(Long doctorId, LocalDate date);
+
+    List<AppointmentSlot> findAllByDoctorIdAndDateBetween(
+            Long doctorId,
+            LocalDate fromDate,
+            LocalDate toDate
     );
 }
 

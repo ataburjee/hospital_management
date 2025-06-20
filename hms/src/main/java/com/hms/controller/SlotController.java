@@ -1,15 +1,16 @@
 package com.hms.controller;
 
-import com.hms.dto.RecurringSlotRequest;
-import com.hms.dto.SlotBookingRequest;
-import com.hms.dto.SlotCreateRequest;
+import com.hms.dto.*;
 import com.hms.service.SlotService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/slots")
@@ -36,5 +37,43 @@ public class SlotController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/available")
+    public ResponseEntity<List<AvailableTimeSlotResponse>> getAvailableSlots(
+            @RequestParam Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(slotService.getAvailableTimeSlots(doctorId, date));
+    }
+
+    @PutMapping("/{appointmentSlotId}")
+    public ResponseEntity<String> updateSlot(
+            @PathVariable Long appointmentSlotId,
+            @RequestBody SlotUpdateRequest request
+    ) {
+        slotService.updateAppointmentSlot(appointmentSlotId, request);
+        return ResponseEntity.ok("Slot updated successfully");
+    }
+
+    @DeleteMapping("/{appointmentSlotId}")
+    public ResponseEntity<String> deleteSlot(@PathVariable Long appointmentSlotId) {
+        slotService.deleteSlotWithTimeSlots(appointmentSlotId);
+        return ResponseEntity.ok("Slot deleted successfully");
+    }
+
+    @PostMapping("/bulk-update-duration")
+    public ResponseEntity<String> bulkUpdateSlotDurations(@RequestBody BulkUpdateSlotDurationRequest request) {
+        slotService.bulkUpdateSlotDurations(request);
+        return ResponseEntity.ok("Updated all slots successfully");
+    }
+    @DeleteMapping("/slots/bulk-delete")
+    public ResponseEntity<String> bulkDeleteSlots(@RequestBody BulkDeleteSlotsRequest request) {
+        slotService.bulkDeleteSlots(request);
+        return ResponseEntity.ok("All relevant slots deleted");
+    }
+
+    @PostMapping("/slots/import-csv")
+    public ResponseEntity<String> importSlots(@RequestParam("file") MultipartFile file) throws IOException {
+        slotService.importSlotsFromCsv(file);
+        return ResponseEntity.ok("Imported successfully");
+    }
 
 }

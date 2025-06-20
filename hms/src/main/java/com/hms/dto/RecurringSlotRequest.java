@@ -1,6 +1,6 @@
 package com.hms.dto;
 
-import com.hms.model.SlotType;
+import com.hms.enums.SlotType;
 import lombok.*;
 
 import java.time.DayOfWeek;

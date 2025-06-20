@@ -1,11 +1,12 @@
 package com.hms.repository;
 
 import com.hms.model.AppointmentSlot;
-import com.hms.model.SlotStatus;
+import com.hms.enums.SlotStatus;
 import com.hms.model.TimeSlot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +28,7 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
             SlotStatus slotStatus
     );
 
+    List<TimeSlot> findByAppointmentSlotOrderByQueueNumberAsc(AppointmentSlot slot);
+
+    Optional<List<TimeSlot>> findByAppointmentSlot(AppointmentSlot slot);
 }

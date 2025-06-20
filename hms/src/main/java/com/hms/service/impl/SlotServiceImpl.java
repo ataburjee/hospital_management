@@ -1,8 +1,8 @@
 package com.hms.service.impl;
 
-import com.hms.dto.RecurringSlotRequest;
-import com.hms.dto.SlotBookingRequest;
-import com.hms.dto.SlotCreateRequest;
+import com.hms.dto.*;
+import com.hms.enums.SlotStatus;
+import com.hms.enums.SlotType;
 import com.hms.model.*;
 import com.hms.repository.AppointmentSlotRepository;
 import com.hms.repository.DoctorRepository;
@@ -12,10 +12,16 @@ import com.hms.service.SlotService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -152,7 +158,7 @@ public class SlotServiceImpl implements SlotService {
             throw new RuntimeException("All time slots are booked");
         }
 
-        TimeSlot nextSlot = timeSlots.get(0);
+        TimeSlot nextSlot = timeSlots.getFirst();
 
         Patient patient = patientRepository.findById(request.getPatientId()).orElse(
                 Patient.builder().name(request.getPatientName()).build()
@@ -170,6 +176,116 @@ public class SlotServiceImpl implements SlotService {
 
         return "Patient " + patient.getName() + " booked at " + nextSlot.getStartTime() +
                 " (Queue #" + nextSlot.getQueueNumber() + ")";
+    }
+
+    @Override
+    public List<AvailableTimeSlotResponse> getAvailableTimeSlots(Long doctorId, LocalDate date) {
+        List<AppointmentSlot> slots = appointmentSlotRepository.findByDoctorIdAndDate(doctorId, date);
+        if (slots.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return slots.stream()
+                .flatMap(slot -> {
+                    List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlot(slot).orElseThrow(
+                            () -> new RuntimeException("No slots found")
+                    );
+                    System.out.println("AppointmentSlot ID: " + slot.getId() + " -> TimeSlots: " + timeSlots.size());
+                    return timeSlots.stream();
+                })
+                .map(ts -> new AvailableTimeSlotResponse(
+                        ts.getId(),
+                        ts.getStartTime().toString(),  // or format using DateTimeFormatter if needed
+                        ts.getEndTime().toString(),
+                        ts.getSlotStatus()
+                ))
+                .toList();
+    }
+
+    @Override
+    public void updateAppointmentSlot(Long id, SlotUpdateRequest request) {
+        AppointmentSlot slot = appointmentSlotRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Slot not found"));
+
+        boolean conflict = appointmentSlotRepository.existsByDoctorIdAndDateAndTimeRange(
+                slot.getDoctor().getId(),
+                request.getDate(),
+                request.getStartTime(),
+                request.getEndTime()
+        );
+
+        if (conflict) {
+            throw new RuntimeException("Slot conflict with existing schedule");
+        }
+
+        slot.setDate(request.getDate());
+        slot.setStartTime(request.getStartTime());
+        slot.setEndTime(request.getEndTime());
+        appointmentSlotRepository.save(slot);
+    }
+
+    @Override
+    public void deleteSlotWithTimeSlots(Long appointmentSlotId) {
+        AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
+                .orElseThrow(() -> new RuntimeException("Slot not found"));
+
+        // Delete associated time slots first (if cascade not working)
+        List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+        timeSlotRepository.deleteAll(timeSlots);
+
+        appointmentSlotRepository.delete(slot);
+    }
+
+    @Override
+    public void bulkUpdateSlotDurations(BulkUpdateSlotDurationRequest request) {
+        List<AppointmentSlot> slots = appointmentSlotRepository
+                .findAllByDoctorIdAndDateBetween(request.getDoctorId(), request.getFromDate(), request.getToDate());
+
+        for (AppointmentSlot slot : slots) {
+            List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+            LocalTime start = slot.getStartTime();
+
+            for (int i = 0; i < timeSlots.size(); i++) {
+                TimeSlot ts = timeSlots.get(i);
+                ts.setStartTime(start);
+                ts.setEndTime(start.plusMinutes(request.getNewDurationInMinutes()));
+                ts.setQueueNumber(i + 1);
+                start = start.plusMinutes(request.getNewDurationInMinutes());
+            }
+
+            timeSlotRepository.saveAll(timeSlots);
+        }
+    }
+
+    @Override
+    public void bulkDeleteSlots(BulkDeleteSlotsRequest request) {
+        List<AppointmentSlot> slots = appointmentSlotRepository
+                .findAllByDoctorIdAndDateBetween(request.getDoctorId(), request.getFromDate(), request.getToDate());
+
+        for (AppointmentSlot slot : slots) {
+            List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+            timeSlotRepository.deleteAll(timeSlots);
+            appointmentSlotRepository.delete(slot);
+        }
+    }
+
+    @Override
+    public void importSlotsFromCsv(MultipartFile file) throws IOException {
+        List<String> lines = new BufferedReader(new InputStreamReader(file.getInputStream()))
+                .lines()
+                .skip(1)
+                .toList();
+
+        for (String line : lines) {
+            String[] fields = line.split(",");
+            Long doctorId = Long.parseLong(fields[0]);
+            LocalDate date = LocalDate.parse(fields[1]);
+            LocalTime start = LocalTime.parse(fields[2]);
+            LocalTime end = LocalTime.parse(fields[3]);
+            int duration = Integer.parseInt(fields[4]);
+
+            createSlot(new SlotCreateRequest(doctorId, date, start, end, SlotType.CONSULTATION, "", "", "", ""));
+        }
     }
 
 }

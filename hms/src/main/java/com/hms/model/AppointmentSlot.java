@@ -1,5 +1,7 @@
 package com.hms.model;
 
+import com.hms.enums.SlotStatus;
+import com.hms.enums.SlotType;
 import jakarta.persistence.*;
 import java.time.LocalTime;
 import java.util.List;

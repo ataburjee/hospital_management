@@ -1,10 +1,8 @@
 package com.hms.model;
 
+import com.hms.enums.SlotStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalTime;
 
