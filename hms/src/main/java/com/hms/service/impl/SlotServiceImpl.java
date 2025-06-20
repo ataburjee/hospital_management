@@ -195,7 +195,7 @@ public class SlotServiceImpl implements SlotService {
                 })
                 .map(ts -> new AvailableTimeSlotResponse(
                         ts.getId(),
-                        ts.getStartTime().toString(),  // or format using DateTimeFormatter if needed
+                        ts.getStartTime().toString(),
                         ts.getEndTime().toString(),
                         ts.getSlotStatus()
                 ))

@@ -16,7 +16,7 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    @PostMapping("/assign")
+    @PostMapping("/auto-assign")
     public ResponseEntity<Patient> assignPatient(
             @RequestParam Long doctorId,
             @RequestParam String name)

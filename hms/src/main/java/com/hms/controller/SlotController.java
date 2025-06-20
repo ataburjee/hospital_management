@@ -64,13 +64,13 @@ public class SlotController {
         slotService.bulkUpdateSlotDurations(request);
         return ResponseEntity.ok("Updated all slots successfully");
     }
-    @DeleteMapping("/slots/bulk-delete")
+    @DeleteMapping("/bulk-delete")
     public ResponseEntity<String> bulkDeleteSlots(@RequestBody BulkDeleteSlotsRequest request) {
         slotService.bulkDeleteSlots(request);
         return ResponseEntity.ok("All relevant slots deleted");
     }
 
-    @PostMapping("/slots/import-csv")
+    @PostMapping("/import-csv")
     public ResponseEntity<String> importSlots(@RequestParam("file") MultipartFile file) throws IOException {
         slotService.importSlotsFromCsv(file);
         return ResponseEntity.ok("Imported successfully");
