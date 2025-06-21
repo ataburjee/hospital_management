@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class AvailableTimeSlotResponse {
-    private Long timeSlotId;
+    private String timeSlotId;
     private String startTime;
     private String endTime;
     private SlotStatus status;

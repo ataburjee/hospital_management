@@ -13,16 +13,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Patient {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private String name;
     private boolean isPresent;
+    private int appointmentNumber;
 
     @OneToOne
-    @JoinColumn(name = "time_slot_id")
+    @JoinColumn(name = "time_slot_id", nullable = false, unique = true)
     private TimeSlot timeSlot;
 
-    private int appointmentNumber;
 }
 

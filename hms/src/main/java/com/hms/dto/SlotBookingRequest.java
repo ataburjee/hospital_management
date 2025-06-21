@@ -8,8 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class SlotBookingRequest {
-    private Long patientId;
-    private Long appointmentSlotId;
+    private String patientId;
+    private String appointmentSlotId;
     private String patientName;
 }
 

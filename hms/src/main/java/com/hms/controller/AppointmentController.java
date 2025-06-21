@@ -18,7 +18,7 @@ public class AppointmentController {
 
     @PostMapping("/auto-assign")
     public ResponseEntity<Patient> assignPatient(
-            @RequestParam Long doctorId,
+            @RequestParam String doctorId,
             @RequestParam String name)
     {
         Patient patient = appointmentService.assignPatientToNextAvailableSlot(doctorId, name);
@@ -26,7 +26,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/present")
-    public ResponseEntity<String> markPresent(@RequestParam Long patientId) {
+    public ResponseEntity<String> markPresent(@RequestParam String patientId) {
         String result = appointmentService.markPatientPresent(patientId);
         return ResponseEntity.ok(result);
     }

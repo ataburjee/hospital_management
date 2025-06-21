@@ -39,14 +39,14 @@ public class SlotController {
 
     @GetMapping("/available")
     public ResponseEntity<List<AvailableTimeSlotResponse>> getAvailableSlots(
-            @RequestParam Long doctorId,
+            @RequestParam String doctorId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return ResponseEntity.ok(slotService.getAvailableTimeSlots(doctorId, date));
     }
 
     @PutMapping("/{appointmentSlotId}")
     public ResponseEntity<String> updateSlot(
-            @PathVariable Long appointmentSlotId,
+            @PathVariable String appointmentSlotId,
             @RequestBody SlotUpdateRequest request
     ) {
         slotService.updateAppointmentSlot(appointmentSlotId, request);
@@ -54,7 +54,7 @@ public class SlotController {
     }
 
     @DeleteMapping("/{appointmentSlotId}")
-    public ResponseEntity<String> deleteSlot(@PathVariable Long appointmentSlotId) {
+    public ResponseEntity<String> deleteSlot(@PathVariable String appointmentSlotId) {
         slotService.deleteSlotWithTimeSlots(appointmentSlotId);
         return ResponseEntity.ok("Slot deleted successfully");
     }

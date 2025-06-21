@@ -1,11 +1,13 @@
 package com.hms.service.impl;
 
-import com.hms.model.*;
-import com.hms.repository.AppointmentSlotRepository;
+import com.hms.model.AppointmentSlot;
+import com.hms.model.Doctor;
+import com.hms.model.Patient;
+import com.hms.model.TimeSlot;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
-import com.hms.repository.TimeSlotRepository;
 import com.hms.service.AppointmentService;
+import com.hms.util.Utility;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,10 +18,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
-    private final TimeSlotRepository timeSlotRepository;
 
     @Transactional
-    public Patient assignPatientToNextAvailableSlot(Long doctorId, String patientName) {
+    public Patient assignPatientToNextAvailableSlot(String doctorId, String patientName) {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
@@ -27,16 +28,21 @@ public class AppointmentServiceImpl implements AppointmentService {
         for (AppointmentSlot slot : doctor.getSlots()) {
             for (TimeSlot timeSlot : slot.getTimeSlots()) {
                 if (timeSlot.getPatient() == null) {
-                    Patient patient = new Patient();
-                    patient.setName(patientName);
-                    patient.setTimeSlot(timeSlot);
-                    patient.setPresent(false);
-                    patientRepository.save(patient);
+                    return Patient.builder()
+                            .id(Utility.generateId(Utility.PATIENT))
+                            .name(patientName)
+                            .timeSlot(timeSlot)
+                            .isPresent(false)
+                            .build();
+//                    patient.setName(patientName);
+//                    patient.setTimeSlot(timeSlot);
+//                    patient.setPresent(false);
+//                    patientRepository.save(patient);
+//
+//                    timeSlot.setPatient(patient);
+//                    timeSlotRepository.save(timeSlot);
 
-                    timeSlot.setPatient(patient);
-                    timeSlotRepository.save(timeSlot);
-
-                    return patient;
+//                    return patient;
                 }
             }
         }
@@ -44,7 +50,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Transactional
-    public String markPatientPresent(Long patientId) {
+    public String markPatientPresent(String patientId) {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
 

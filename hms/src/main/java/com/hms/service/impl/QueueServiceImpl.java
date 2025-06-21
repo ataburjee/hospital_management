@@ -24,7 +24,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     @Transactional
-    public String markQueueStarted(Long appointmentSlotId) {
+    public String markQueueStarted(String appointmentSlotId) {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("AppointmentSlot not found"));
 
@@ -47,7 +47,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     @Transactional
-    public String markCurrentAsMissed(Long appointmentSlotId) {
+    public String markCurrentAsMissed(String appointmentSlotId) {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("AppointmentSlot not found"));
 
@@ -79,7 +79,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     @Transactional
-    public String markLateArrival(Long appointmentSlotId, int missedQueueNumber) {
+    public String markLateArrival(String appointmentSlotId, int missedQueueNumber) {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
@@ -99,7 +99,7 @@ public class QueueServiceImpl implements QueueService {
     }
 
     @Override
-    public List<QueueStatusResponse> getQueueStatus(Long appointmentSlotId) {
+    public List<QueueStatusResponse> getQueueStatus(String appointmentSlotId) {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
@@ -113,7 +113,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     @Transactional
-    public String completeCurrentAndPromoteNext(Long appointmentSlotId) {
+    public String completeCurrentAndPromoteNext(String appointmentSlotId) {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("AppointmentSlot not found"));
 

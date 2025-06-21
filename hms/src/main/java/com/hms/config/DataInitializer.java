@@ -5,6 +5,7 @@ import com.hms.model.TimeSlot;
 import com.hms.repository.AppointmentSlotRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.TimeSlotRepository;
+import com.hms.util.Utility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -23,9 +24,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         List<Doctor> doctors = List.of(
-                new Doctor("Dr. A", "General Physician"),
-                new Doctor("Dr. B", "General Physician"),
-                new Doctor("Dr. C", "General Physician")
+                new Doctor(getId(), "Dr. A", "General Physician"),
+                new Doctor(getId(), "Dr. B", "General Physician"),
+                new Doctor(getId(), "Dr. C", "General Physician")
         );
 
         LocalTime[] startTimes = { LocalTime.of(9, 0), LocalTime.of(10, 0), LocalTime.of(11, 0) };
@@ -36,10 +37,16 @@ public class DataInitializer implements CommandLineRunner {
 
             for (int j = 0; j < 4; j++) {
                 TimeSlot ts = new TimeSlot();
+                ts.setId(Utility.generateId());
+                ts.setQueueNumber(i+1);
                 ts.setStartTime(startTimes[i].plusMinutes(j * 15));
                 ts.setEndTime(startTimes[i].plusMinutes((j + 1) * 15));
                 timeSlotRepository.save(ts);
             }
         }
+    }
+
+    String getId() {
+        return Utility.generateId(Utility.DOCTOR);
     }
 }

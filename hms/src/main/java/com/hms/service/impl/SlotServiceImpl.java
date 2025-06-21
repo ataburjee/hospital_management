@@ -9,6 +9,7 @@ import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.TimeSlotRepository;
 import com.hms.service.SlotService;
+import com.hms.util.Utility;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ public class SlotServiceImpl implements SlotService {
 
         // Step 3: Create Slot
         AppointmentSlot slot = AppointmentSlot.builder()
+                .id(Utility.generateId())
                 .doctor(doctor)
                 .date(request.getDate())
                 .startTime(request.getStartTime())
@@ -80,6 +82,7 @@ public class SlotServiceImpl implements SlotService {
             LocalTime next = pointer.plusMinutes(durationInMinutes);
 
             TimeSlot timeSlot = TimeSlot.builder()
+                    .id(Utility.generateId())
                     .startTime(pointer)
                     .endTime(next)
                     .appointmentSlot(slot)
@@ -119,6 +122,7 @@ public class SlotServiceImpl implements SlotService {
 
                 if (!exists) {
                     AppointmentSlot slot = AppointmentSlot.builder()
+                            .id(Utility.generateId())
                             .doctor(doctor)
                             .date(date)
                             .startTime(slotStart)
@@ -161,7 +165,7 @@ public class SlotServiceImpl implements SlotService {
         TimeSlot nextSlot = timeSlots.getFirst();
 
         Patient patient = patientRepository.findById(request.getPatientId()).orElse(
-                Patient.builder().name(request.getPatientName()).build()
+                Patient.builder().id(Utility.generateId(Utility.PATIENT)).name(request.getPatientName()).build()
         );
         patientRepository.save(patient);
 
@@ -179,7 +183,7 @@ public class SlotServiceImpl implements SlotService {
     }
 
     @Override
-    public List<AvailableTimeSlotResponse> getAvailableTimeSlots(Long doctorId, LocalDate date) {
+    public List<AvailableTimeSlotResponse> getAvailableTimeSlots(String doctorId, LocalDate date) {
         List<AppointmentSlot> slots = appointmentSlotRepository.findByDoctorIdAndDate(doctorId, date);
         if (slots.isEmpty()) {
             return Collections.emptyList();
@@ -203,7 +207,7 @@ public class SlotServiceImpl implements SlotService {
     }
 
     @Override
-    public void updateAppointmentSlot(Long id, SlotUpdateRequest request) {
+    public void updateAppointmentSlot(String id, SlotUpdateRequest request) {
         AppointmentSlot slot = appointmentSlotRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
@@ -225,7 +229,7 @@ public class SlotServiceImpl implements SlotService {
     }
 
     @Override
-    public void deleteSlotWithTimeSlots(Long appointmentSlotId) {
+    public void deleteSlotWithTimeSlots(String appointmentSlotId) {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
@@ -278,7 +282,7 @@ public class SlotServiceImpl implements SlotService {
 
         for (String line : lines) {
             String[] fields = line.split(",");
-            Long doctorId = Long.parseLong(fields[0]);
+            String doctorId = String.valueOf(fields[0]);
             LocalDate date = LocalDate.parse(fields[1]);
             LocalTime start = LocalTime.parse(fields[2]);
             LocalTime end = LocalTime.parse(fields[3]);

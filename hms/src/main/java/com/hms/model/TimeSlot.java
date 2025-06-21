@@ -14,8 +14,7 @@ import java.time.LocalTime;
 @Builder
 public class TimeSlot {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     private LocalTime startTime;
     private LocalTime endTime;
@@ -27,7 +26,7 @@ public class TimeSlot {
     @Enumerated(EnumType.STRING)
     private SlotStatus slotStatus;
 
-    @OneToOne(mappedBy = "timeSlot", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "timeSlot")
     private Patient patient;
 
     private int queueNumber;

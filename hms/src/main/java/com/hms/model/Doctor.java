@@ -14,19 +14,18 @@ import java.util.List;
 @AllArgsConstructor
 public class Doctor {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    private String id;
     private String name;
-
     private String specialization;
 
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL)
-    private List<AppointmentSlot> slots = new ArrayList<>();
-
-    public Doctor(String name, String specialization) {
+    public Doctor(String id, String name, String specialization) {
+        this.id = id;
         this.name = name;
         this.specialization = specialization;
     }
+
+    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AppointmentSlot> slots = new ArrayList<>();
+
 }
 

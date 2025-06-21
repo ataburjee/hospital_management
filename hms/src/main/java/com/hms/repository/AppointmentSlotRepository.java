@@ -11,7 +11,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Repository
-public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot, Long> {
+public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot, String> {
 
     @Query("""
         SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END
@@ -23,16 +23,16 @@ public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot
           )
     """)
     boolean existsByDoctorIdAndDateAndTimeRange(
-            @Param("doctorId") Long doctorId,
+            @Param("doctorId") String doctorId,
             @Param("date") LocalDate date,
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime
     );
 
-    List<AppointmentSlot> findByDoctorIdAndDate(Long doctorId, LocalDate date);
+    List<AppointmentSlot> findByDoctorIdAndDate(String doctorId, LocalDate date);
 
     List<AppointmentSlot> findAllByDoctorIdAndDateBetween(
-            Long doctorId,
+            String doctorId,
             LocalDate fromDate,
             LocalDate toDate
     );

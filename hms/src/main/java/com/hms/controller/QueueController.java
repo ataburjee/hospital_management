@@ -16,30 +16,30 @@ public class QueueController {
     private final QueueService queueService;
 
     @PostMapping("/mark-arrived/{appointmentSlotId}")
-    public ResponseEntity<String> markQueueStarted(@PathVariable("appointmentSlotId") Long appointmentSlotId) {
+    public ResponseEntity<String> markQueueStarted(@PathVariable("appointmentSlotId") String appointmentSlotId) {
         return ResponseEntity.ok(queueService.markQueueStarted(appointmentSlotId));
     }
 
     @PostMapping("/mark-missed/{appointmentSlotId}")
-    public ResponseEntity<String> markMissed(@PathVariable("appointmentSlotId") Long appointmentSlotId) {
+    public ResponseEntity<String> markMissed(@PathVariable("appointmentSlotId") String appointmentSlotId) {
         return ResponseEntity.ok(queueService.markCurrentAsMissed(appointmentSlotId));
     }
 
     @PostMapping("/arrive-late")
     public ResponseEntity<String> arriveLate(
-            @RequestParam("appointmentSlotId") Long appointmentSlotId,
+            @RequestParam("appointmentSlotId") String appointmentSlotId,
             @RequestParam("missedQueueNumber") int missedQueueNumber
     ) {
         return ResponseEntity.ok(queueService.markLateArrival(appointmentSlotId, missedQueueNumber));
     }
 
     @PostMapping("/status/{appointmentSlotId}")
-    public ResponseEntity<List<QueueStatusResponse>> getQueueStatus(@PathVariable("appointmentSlotId") Long appointmentSlotId) {
+    public ResponseEntity<List<QueueStatusResponse>> getQueueStatus(@PathVariable("appointmentSlotId") String appointmentSlotId) {
         return ResponseEntity.ok(queueService.getQueueStatus(appointmentSlotId));
     }
 
     @PostMapping("/complete-current/{appointmentSlotId}")
-    public ResponseEntity<String> completeAndPromote(@PathVariable Long appointmentSlotId) {
+    public ResponseEntity<String> completeAndPromote(@PathVariable String appointmentSlotId) {
         return ResponseEntity.ok(queueService.completeCurrentAndPromoteNext(appointmentSlotId));
     }
 }

@@ -19,8 +19,7 @@ import java.time.LocalDate;
 public class AppointmentSlot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "slot_date", nullable = false)
     private LocalDate date;

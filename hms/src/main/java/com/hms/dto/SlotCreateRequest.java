@@ -11,11 +11,10 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class SlotCreateRequest {
 
-    private Long doctorId;
+    private String doctorId;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
-
     private SlotType slotType;
     private String tag;
     private String note;
