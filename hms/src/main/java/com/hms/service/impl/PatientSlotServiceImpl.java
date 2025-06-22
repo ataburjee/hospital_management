@@ -8,7 +8,7 @@ import com.hms.repository.AppointmentSlotRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.repository.TimeSlotRepository;
-import com.hms.service.SlotService;
+import com.hms.service.PatientSlotService;
 import com.hms.util.Utility;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +22,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SlotServiceImpl implements SlotService {
+public class PatientSlotServiceImpl implements PatientSlotService {
 
     private final DoctorRepository doctorRepository;
     private final AppointmentSlotRepository appointmentSlotRepository;
@@ -81,7 +80,7 @@ public class SlotServiceImpl implements SlotService {
         while (pointer.plusMinutes(durationInMinutes).isBefore(slot.getEndTime().plusSeconds(1))) {
             LocalTime next = pointer.plusMinutes(durationInMinutes);
 
-            TimeSlot timeSlot = TimeSlot.builder()
+            PatientTimeSlot patientTimeSlot = PatientTimeSlot.builder()
                     .id(Utility.generateId())
                     .startTime(pointer)
                     .endTime(next)
@@ -90,7 +89,7 @@ public class SlotServiceImpl implements SlotService {
                     .slotStatus(SlotStatus.AVAILABLE)
                     .build();
 
-            timeSlotRepository.save(timeSlot);
+            timeSlotRepository.save(patientTimeSlot);
             pointer = next;
         }
     }
@@ -154,15 +153,15 @@ public class SlotServiceImpl implements SlotService {
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
         // Get next available 15-min sub-slot
-        List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotAndSlotStatusOrderByQueueNumber(
+        List<PatientTimeSlot> patientTimeSlots = timeSlotRepository.findByAppointmentSlotAndSlotStatusOrderByQueueNumber(
                 slot, SlotStatus.AVAILABLE
         );
 
-        if (timeSlots.isEmpty()) {
+        if (patientTimeSlots.isEmpty()) {
             throw new RuntimeException("Oops! all slots are booked");
         }
 
-        TimeSlot nextSlot = timeSlots.getFirst();
+        PatientTimeSlot nextSlot = patientTimeSlots.getFirst();
 
         Patient patient = patientRepository.findById(request.getPatientId()).orElse(
                 Patient.builder().id(Utility.generateId(Utility.PATIENT)).name(request.getPatientName()).build()
@@ -172,7 +171,7 @@ public class SlotServiceImpl implements SlotService {
         // Assign patient to slot
         nextSlot.setPatient(patient);
         nextSlot.setSlotStatus(SlotStatus.BOOKED);
-        patient.setTimeSlot(nextSlot);
+        patient.setPatientTimeSlot(nextSlot);
         patient.setAppointmentNumber(nextSlot.getQueueNumber());
 
         patientRepository.save(patient);
@@ -191,11 +190,11 @@ public class SlotServiceImpl implements SlotService {
 
         return slots.stream()
                 .flatMap(slot -> {
-                    List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlot(slot).orElseThrow(
+                    List<PatientTimeSlot> patientTimeSlots = timeSlotRepository.findByAppointmentSlot(slot).orElseThrow(
                             () -> new RuntimeException("No slots found")
                     );
-                    System.out.println("AppointmentSlot ID: " + slot.getId() + " -> TimeSlots: " + timeSlots.size());
-                    return timeSlots.stream();
+                    System.out.println("AppointmentSlot ID: " + slot.getId() + " -> TimeSlots: " + patientTimeSlots.size());
+                    return patientTimeSlots.stream();
                 })
                 .map(ts -> new AvailableTimeSlotResponse(
                         ts.getId(),
@@ -234,8 +233,8 @@ public class SlotServiceImpl implements SlotService {
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
         // Delete associated time slots first (if cascade not working)
-        List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
-        timeSlotRepository.deleteAll(timeSlots);
+        List<PatientTimeSlot> patientTimeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+        timeSlotRepository.deleteAll(patientTimeSlots);
 
         appointmentSlotRepository.delete(slot);
     }
@@ -243,32 +242,32 @@ public class SlotServiceImpl implements SlotService {
     @Override
     public void bulkUpdateSlotDurations(BulkUpdateSlotDurationRequest request) {
         List<AppointmentSlot> slots = appointmentSlotRepository
-                .findAllByDoctorIdAndDateBetween(request.getDoctorId(), request.getFromDate(), request.getToDate());
+                .findAllByDoctorIdAndDateBetween(request.getDoctorId(), request.getStartDate(), request.getEndDate());
 
         for (AppointmentSlot slot : slots) {
-            List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+            List<PatientTimeSlot> patientTimeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
             LocalTime start = slot.getStartTime();
 
-            for (int i = 0; i < timeSlots.size(); i++) {
-                TimeSlot ts = timeSlots.get(i);
+            for (int i = 0; i < patientTimeSlots.size(); i++) {
+                PatientTimeSlot ts = patientTimeSlots.get(i);
                 ts.setStartTime(start);
                 ts.setEndTime(start.plusMinutes(request.getNewDurationInMinutes()));
                 ts.setQueueNumber(i + 1);
                 start = start.plusMinutes(request.getNewDurationInMinutes());
             }
 
-            timeSlotRepository.saveAll(timeSlots);
+            timeSlotRepository.saveAll(patientTimeSlots);
         }
     }
 
     @Override
     public void bulkDeleteSlots(BulkDeleteSlotsRequest request) {
         List<AppointmentSlot> slots = appointmentSlotRepository
-                .findAllByDoctorIdAndDateBetween(request.getDoctorId(), request.getFromDate(), request.getToDate());
+                .findAllByDoctorIdAndDateBetween(request.getDoctorId(), request.getStartDate(), request.getEndDate());
 
         for (AppointmentSlot slot : slots) {
-            List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
-            timeSlotRepository.deleteAll(timeSlots);
+            List<PatientTimeSlot> patientTimeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+            timeSlotRepository.deleteAll(patientTimeSlots);
             appointmentSlotRepository.delete(slot);
         }
     }

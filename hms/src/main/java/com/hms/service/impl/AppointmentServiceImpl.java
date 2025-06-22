@@ -3,7 +3,7 @@ package com.hms.service.impl;
 import com.hms.model.AppointmentSlot;
 import com.hms.model.Doctor;
 import com.hms.model.Patient;
-import com.hms.model.TimeSlot;
+import com.hms.model.PatientTimeSlot;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.PatientRepository;
 import com.hms.service.AppointmentService;
@@ -26,12 +26,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // Traversing doctor’s time slots to find next availability slot
         for (AppointmentSlot slot : doctor.getSlots()) {
-            for (TimeSlot timeSlot : slot.getTimeSlots()) {
-                if (timeSlot.getPatient() == null) {
+            for (PatientTimeSlot patientTimeSlot : slot.getPatientTimeSlots()) {
+                if (patientTimeSlot.getPatient() == null) {
                     return Patient.builder()
                             .id(Utility.generateId(Utility.PATIENT))
                             .name(patientName)
-                            .timeSlot(timeSlot)
+                            .patientTimeSlot(patientTimeSlot)
                             .isPresent(false)
                             .build();
 //                    patient.setName(patientName);

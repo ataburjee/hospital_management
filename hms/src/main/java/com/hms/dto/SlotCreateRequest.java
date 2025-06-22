@@ -15,9 +15,11 @@ public class SlotCreateRequest {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
+    private Integer slotDurationInMinutes;
     private SlotType slotType;
     private String tag;
     private String note;
     private String colorCode;
     private String recurrencePattern;
+
 }

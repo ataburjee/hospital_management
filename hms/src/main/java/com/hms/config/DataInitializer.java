@@ -1,7 +1,7 @@
 package com.hms.config;
 
 import com.hms.model.Doctor;
-import com.hms.model.TimeSlot;
+import com.hms.model.PatientTimeSlot;
 import com.hms.repository.AppointmentSlotRepository;
 import com.hms.repository.DoctorRepository;
 import com.hms.repository.TimeSlotRepository;
@@ -36,7 +36,7 @@ public class DataInitializer implements CommandLineRunner {
             doctorRepository.save(doctor);
 
             for (int j = 0; j < 4; j++) {
-                TimeSlot ts = new TimeSlot();
+                PatientTimeSlot ts = new PatientTimeSlot();
                 ts.setId(Utility.generateId());
                 ts.setQueueNumber(i+1);
                 ts.setStartTime(startTimes[i].plusMinutes(j * 15));

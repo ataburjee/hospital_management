@@ -3,7 +3,7 @@ package com.hms.service.impl;
 import com.hms.dto.QueueStatusResponse;
 import com.hms.model.AppointmentSlot;
 import com.hms.enums.SlotStatus;
-import com.hms.model.TimeSlot;
+import com.hms.model.PatientTimeSlot;
 import com.hms.repository.AppointmentSlotRepository;
 import com.hms.repository.TimeSlotRepository;
 import com.hms.service.QueueService;
@@ -28,11 +28,11 @@ public class QueueServiceImpl implements QueueService {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("AppointmentSlot not found"));
 
-        Optional<TimeSlot> firstBooked = timeSlotRepository
+        Optional<PatientTimeSlot> firstBooked = timeSlotRepository
                 .findFirstByAppointmentSlotAndSlotStatusOrderByQueueNumberAsc(slot, SlotStatus.BOOKED);
 
         if (firstBooked.isPresent()) {
-            TimeSlot slotToMark = firstBooked.get();
+            PatientTimeSlot slotToMark = firstBooked.get();
             slotToMark.setSlotStatus(SlotStatus.CURRENT);
             slot.setCurrentQueueNumber(slotToMark.getQueueNumber());
 
@@ -53,19 +53,19 @@ public class QueueServiceImpl implements QueueService {
 
         int current = slot.getCurrentQueueNumber();
 
-        TimeSlot currentSlot = timeSlotRepository.findByAppointmentSlotAndQueueNumber(slot, current)
+        PatientTimeSlot currentSlot = timeSlotRepository.findByAppointmentSlotAndQueueNumber(slot, current)
                 .orElseThrow(() -> new RuntimeException("Current time slot not found"));
 
         currentSlot.setSlotStatus(SlotStatus.MISSED);
         timeSlotRepository.save(currentSlot);
 
-        Optional<TimeSlot> nextSlotOpt = timeSlotRepository
+        Optional<PatientTimeSlot> nextSlotOpt = timeSlotRepository
                 .findFirstByAppointmentSlotAndQueueNumberGreaterThanAndSlotStatusOrderByQueueNumberAsc(
                         slot, current, SlotStatus.BOOKED
                 );
 
         if (nextSlotOpt.isPresent()) {
-            TimeSlot next = nextSlotOpt.get();
+            PatientTimeSlot next = nextSlotOpt.get();
             next.setSlotStatus(SlotStatus.CURRENT);
             slot.setCurrentQueueNumber(next.getQueueNumber());
             appointmentSlotRepository.save(slot);
@@ -85,7 +85,7 @@ public class QueueServiceImpl implements QueueService {
 
         int current = slot.getCurrentQueueNumber();
 
-        TimeSlot missedSlot = timeSlotRepository.findByAppointmentSlotAndQueueNumber(slot, missedQueueNumber)
+        PatientTimeSlot missedSlot = timeSlotRepository.findByAppointmentSlotAndQueueNumber(slot, missedQueueNumber)
                 .orElseThrow(() -> new RuntimeException("Invalid missed queue number"));
 
         if (missedSlot.getSlotStatus() != SlotStatus.MISSED) {
@@ -103,9 +103,9 @@ public class QueueServiceImpl implements QueueService {
         AppointmentSlot slot = appointmentSlotRepository.findById(appointmentSlotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
-        List<TimeSlot> timeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
+        List<PatientTimeSlot> patientTimeSlots = timeSlotRepository.findByAppointmentSlotOrderByQueueNumberAsc(slot);
 
-        return timeSlots.stream().map(ts -> {
+        return patientTimeSlots.stream().map(ts -> {
             String name = ts.getPatient() != null ? ts.getPatient().getName() : "N/A";
             return new QueueStatusResponse(ts.getQueueNumber(), name, ts.getSlotStatus());
         }).toList();
@@ -119,7 +119,7 @@ public class QueueServiceImpl implements QueueService {
 
         int currentQueue = slot.getCurrentQueueNumber();
 
-        TimeSlot currentSlot = timeSlotRepository.findByAppointmentSlotAndQueueNumber(slot, currentQueue)
+        PatientTimeSlot currentSlot = timeSlotRepository.findByAppointmentSlotAndQueueNumber(slot, currentQueue)
                 .orElseThrow(() -> new RuntimeException("Current slot not found"));
 
         if (currentSlot.getSlotStatus() != SlotStatus.CURRENT) {
@@ -131,13 +131,13 @@ public class QueueServiceImpl implements QueueService {
         timeSlotRepository.save(currentSlot);
 
         // Promote next booked patient
-        Optional<TimeSlot> next = timeSlotRepository
+        Optional<PatientTimeSlot> next = timeSlotRepository
                 .findFirstByAppointmentSlotAndQueueNumberGreaterThanAndSlotStatusOrderByQueueNumberAsc(
                         slot, currentQueue, SlotStatus.BOOKED
                 );
 
         if (next.isPresent()) {
-            TimeSlot nextSlot = next.get();
+            PatientTimeSlot nextSlot = next.get();
             nextSlot.setSlotStatus(SlotStatus.CURRENT);
             slot.setCurrentQueueNumber(nextSlot.getQueueNumber());
             timeSlotRepository.save(nextSlot);

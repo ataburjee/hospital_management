@@ -3,9 +3,12 @@ package com.hms.model;
 import com.hms.enums.SlotStatus;
 import com.hms.enums.SlotType;
 import jakarta.persistence.*;
+
 import java.time.LocalTime;
 import java.util.List;
+
 import lombok.*;
+
 import java.time.LocalDate;
 
 @Entity
@@ -29,10 +32,6 @@ public class AppointmentSlot {
 
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id", nullable = false)
-    private Doctor doctor;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "slot_type")
@@ -60,7 +59,11 @@ public class AppointmentSlot {
     @Column(name = "current_queue")
     private Integer currentQueueNumber = 1;
 
-    @OneToMany(mappedBy = "appointmentSlot", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TimeSlot> timeSlots;
-}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "doctor_id", nullable = false)
+    private Doctor doctor;
 
+    @OneToMany(mappedBy = "appointmentSlot", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PatientTimeSlot> patientTimeSlots;
+
+}

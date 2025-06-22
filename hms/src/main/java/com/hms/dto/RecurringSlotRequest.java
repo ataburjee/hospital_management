@@ -19,7 +19,7 @@ public class RecurringSlotRequest {
     private LocalDate endDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private int slotDurationInMinutes;
+    private Integer slotDurationInMinutes;
     private List<DayOfWeek> repeatOn;
     private SlotType slotType;
     private String tag;

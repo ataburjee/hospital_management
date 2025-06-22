@@ -20,8 +20,8 @@ public class Patient {
     private int appointmentNumber;
 
     @OneToOne
-    @JoinColumn(name = "time_slot_id", nullable = false, unique = true)
-    private TimeSlot timeSlot;
+    @JoinColumn(name = "patient_time_slot_id", nullable = false, unique = true)
+    private PatientTimeSlot patientTimeSlot;
 
 }
 

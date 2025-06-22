@@ -12,7 +12,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TimeSlot {
+public class PatientTimeSlot {
     @Id
     private String id;
 

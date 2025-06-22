@@ -8,8 +8,8 @@ import java.time.LocalDate;
 @Setter
 public class BulkUpdateSlotDurationRequest {
     private String doctorId;
-    private LocalDate fromDate;
-    private LocalDate toDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private int newDurationInMinutes;
 }
 

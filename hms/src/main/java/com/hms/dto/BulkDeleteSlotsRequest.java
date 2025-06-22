@@ -7,6 +7,6 @@ import java.time.LocalDate;
 @Data
 public class BulkDeleteSlotsRequest {
     private String doctorId;
-    private LocalDate fromDate;
-    private LocalDate toDate;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }
