@@ -159,7 +159,7 @@ public class SlotServiceImpl implements SlotService {
         );
 
         if (timeSlots.isEmpty()) {
-            throw new RuntimeException("All time slots are booked");
+            throw new RuntimeException("Oops! all slots are booked");
         }
 
         TimeSlot nextSlot = timeSlots.getFirst();
@@ -286,10 +286,17 @@ public class SlotServiceImpl implements SlotService {
             LocalDate date = LocalDate.parse(fields[1]);
             LocalTime start = LocalTime.parse(fields[2]);
             LocalTime end = LocalTime.parse(fields[3]);
-            int duration = Integer.parseInt(fields[4]);
+            SlotType slotType = SlotType.valueOf(fields[4]);
+            int duration = Integer.parseInt(fields[5]);
 
-            createSlot(new SlotCreateRequest(doctorId, date, start, end, SlotType.CONSULTATION, "", "", "", ""));
+            createSlot(SlotCreateRequest.builder()
+                    .doctorId(doctorId)
+                    .date(date)
+                    .startTime(start)
+                    .endTime(end)
+                    .slotDurationInMinutes(duration)
+                    .slotType(slotType)
+                    .build());
         }
     }
-
 }

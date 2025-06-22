@@ -31,8 +31,4 @@ public class TimeSlot {
 
     private int queueNumber;
 
-    @Version
-    private Long version;
 }
-
-

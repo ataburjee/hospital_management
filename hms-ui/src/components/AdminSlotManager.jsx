@@ -34,13 +34,44 @@ function AdminSlotPage() {
         setFeedback("📁 File selected. Ready to import.");
     };
 
-    const createSlot = () => {
-        // Handle create logic here
+    const createSlot = async () => {
+        const payload = {
+            doctorId: "HMS-DOC86a65e4f-34e4-43b8-b1d8-ebe488fdc582",
+            date: selectedDate,
+            startTime: startTime,
+            endTime: endTime,
+            slotDurationInMinutes: duration,
+            repeatOn: repeatOn,
+            slotType: slotType,
+            tag: tag,
+            note: note,
+            colorCode: colorCode,
+            recurrencePattern: ""
+        };
+
+        try {
+            const response = await fetch("http://localhost:8080/api/slots", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) throw new Error("Slot creation failed");
+
+            const result = await response.text();
+            console.log("Slot creation result = ", result);
+            handleSubmit(result);
+
+        } catch (err) {
+            handleSubmitMessage("Slot operation failed");
+            console.error(err);
+        }
         handleSubmit();
     };
 
     const bulkCreateSlot = async () => {
-        // Handle bulk create logic here
         const payload = {
             doctorId: "HMS-DOC86a65e4f-34e4-43b8-b1d8-ebe488fdc582",
             startDate: bulkStartDate,
@@ -71,16 +102,150 @@ function AdminSlotPage() {
             handleSubmit(result);
 
         } catch (err) {
-            setFeedback("Slot operation failed");
+            setFeedback("Bulk slot operation failed");
             setTimeout(() => setFeedback(""), 3000);
             console.error(err);
         }
     };
 
-    const updateSlot = () => {
-        // Handle update logic here
+    const updateSlot = async () => {
+        const payload = {
+            date: selectedDate,
+            startTime: startTime,
+            endTime: endTime,
+        };
+
+        // "HMS-GENb0e8af0a-596c-4fc7-ab03-56b5da7bd5be"
+        try {
+            const response = await fetch("http://localhost:8080/api/slots/HMS-GENb0e8af0a-596c-4fc7-ab03-56b5da7bd5be", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) throw new Error("Updating slot failed");
+
+            const result = await response.text();
+            console.log("Result = ", result);
+            handleSubmit(result);
+
+        } catch (err) {
+            setFeedback("Slot update operation failed");
+            setTimeout(() => setFeedback(""), 3000);
+            console.error(err);
+        }
         handleSubmit();
     };
+
+    const bulkUpdateSlot = async () => {
+        const payload = {
+            date: selectedDate,
+            startDate: bulkStartDate,
+            endDate: bulkEndDate,
+        };
+
+
+        try {
+            const response = await fetch("http://localhost:8080/api/slots/bulk-update-duration", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) throw new Error("Bulk Updating slot failed");
+
+            const result = await response.text();
+            console.log("Result = ", result);
+            handleSubmit(result);
+
+        } catch (err) {
+            setFeedback("Bulk slot update operation failed");
+            setTimeout(() => setFeedback(""), 3000);
+            console.error(err);
+        }
+        handleSubmit();
+    }
+
+    const deleteSlot = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/slots/HMS-GENb0e8af0a-596c-4fc7-ab03-56b5da7bd5be", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) throw new Error("Deleting slot failed");
+
+            const result = await response.text();
+            console.log("Result = ", result);
+            handleSubmit(result);
+
+        } catch (err) {
+            setFeedback("Slot delete operation failed");
+            setTimeout(() => setFeedback(""), 3000);
+            console.error(err);
+        }
+        handleSubmit();
+    }
+
+    const bulkDeleteSlot = async () => {
+        const payload = {
+            doctorId: "HMS-DOC86a65e4f-34e4-43b8-b1d8-ebe488fdc582",
+            startDate: bulkStartDate,
+            endDate: bulkEndDate,
+        };
+        try {
+            const response = await fetch("http://localhost:8080/api/slots/bulk-delete", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) throw new Error("Deleting bulk slot failed");
+
+            const result = await response.text();
+            console.log("Result = ", result);
+            handleSubmit(result);
+
+        } catch (err) {
+            setFeedback("Bulk slot deleting operation failed");
+            setTimeout(() => setFeedback(""), 3000);
+            console.error(err);
+        }
+        handleSubmit();
+    }
+
+    const importCSV = async () => {
+        if (!file) {
+            handleSubmitMessage("❌ Please select a CSV file first.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await fetch("http://localhost:8080/api/slots/import-csv", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) throw new Error("Upload failed");
+
+            const result = await response.text();
+            setFeedback(`✅ ${result}`);
+        } catch (err) {
+            console.error(err);
+            handleSubmitMessage("❌ Failed to import CSV.");
+        }
+    }
 
     const toggleDay = (day) => {
         setRepeatOn(prev =>
@@ -96,7 +261,7 @@ function AdminSlotPage() {
                 return (
                     <div className="space-y-4">
                         <label className="block">
-                            Date:
+                            Date :
                             <DatePicker
                                 selected={selectedDate}
                                 onChange={(date) => setSelectedDate(date)}
@@ -105,7 +270,7 @@ function AdminSlotPage() {
                             />
                         </label>
                         <label className="block">
-                            Start Time:
+                            Start Time :
                             <input
                                 type="time"
                                 value={startTime}
@@ -114,13 +279,22 @@ function AdminSlotPage() {
                             />
                         </label>
                         <label className="block">
-                            End Time:
+                            End Time :
                             <input
                                 type="time"
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
                                 className="border rounded p-2 w-full"
                             />
+                        </label>
+                        <label className="block">
+                            Slot Type:
+                            <select value={slotType} onChange={(e) => setSlotType(e.target.value)} className="border rounded p-2 w-full">
+                                <option value="">-- Select Slot Type --</option>
+                                <option value="CONSULTATION">Consultation</option>
+                                <option value="SURGERY">Surgery</option>
+                                <option value="BREAK">Break</option>
+                            </select>
                         </label>
                         <button
                             onClick={createSlot}
@@ -134,7 +308,7 @@ function AdminSlotPage() {
                 return (
                     <div className="space-y-4">
                         <label className="block">
-                            Start Date:
+                            Start Date :
                             <DatePicker
                                 selected={bulkStartDate}
                                 onChange={(date) => setBulkStartDate(date)}
@@ -143,7 +317,7 @@ function AdminSlotPage() {
                             />
                         </label>
                         <label className="block">
-                            End Date:
+                            End Date :
                             <DatePicker
                                 selected={bulkEndDate}
                                 onChange={(date) => setBulkEndDate(date)}
@@ -152,7 +326,7 @@ function AdminSlotPage() {
                             />
                         </label>
                         <label className="block">
-                            Start Time:
+                            Start Time :
                             <input
                                 type="time"
                                 value={startTime}
@@ -161,7 +335,7 @@ function AdminSlotPage() {
                             />
                         </label>
                         <label className="block">
-                            End Time:
+                            End Time :
                             <input
                                 type="time"
                                 value={endTime}
@@ -179,7 +353,7 @@ function AdminSlotPage() {
                             />
                         </label>
                         <label className="block">
-                            Repeat On:
+                            Repeat On :
                             <div className="flex flex-wrap gap-2">
                                 {["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"].map(day => (
                                     <button
@@ -205,7 +379,7 @@ function AdminSlotPage() {
                         <input type="text" placeholder="Tag" value={tag} onChange={(e) => setTag(e.target.value)} className="border rounded p-2 w-full" />
                         <textarea placeholder="Note" value={note} onChange={(e) => setNote(e.target.value)} className="border rounded p-2 w-full" />
                         <label className="block">
-                            Color Code:
+                            Color Code :
                             <input type="color" value={colorCode} onChange={(e) => setColorCode(e.target.value)} className="w-16 h-10 border rounded" />
                         </label>
                         <button
@@ -230,15 +404,93 @@ function AdminSlotPage() {
                         </button>
                     </div>
                 );
+            case "bulkUpdate":
+                return (
+                    <div className="space-y-4">
+                        <label className="block">
+                            Start Date :
+                            <DatePicker
+                                selected={bulkStartDate}
+                                onChange={(date) => setBulkStartDate(date)}
+                                className="border rounded p-2 w-full"
+                                dateFormat="yyyy-MM-dd"
+                            />
+                        </label>
+                        <label className="block">
+                            End Date :
+                            <DatePicker
+                                selected={bulkEndDate}
+                                onChange={(date) => setBulkEndDate(date)}
+                                className="border rounded p-2 w-full"
+                                dateFormat="yyyy-MM-dd"
+                            />
+                        </label>
+                        <label className="block">
+                            New Duration (minutes):
+                            <input
+                                type="number"
+                                value={duration}
+                                defaultValue={15}
+                                onChange={(e) => setDuration(e.target.value)}
+                                className="border rounded p-2 w-full"
+                            />
+                        </label>
+                        <button
+                            onClick={bulkUpdateSlot}
+                            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                        >
+                            Bulk Update Duration
+                        </button>
+                    </div>
+                );
             case "delete":
                 return (
                     <div className="space-y-4">
                         <input type="text" placeholder="Slot ID to Delete" className="border rounded p-2 w-full" />
                         <button
-                            onClick={handleSubmit}
+                            onClick={deleteSlot}
                             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                         >
                             Delete Slot
+                        </button>
+                    </div>
+                );
+
+            case "bulkDelete":
+                return (
+                    <div className="space-y-4">
+                        <input
+                            type="text"
+                            placeholder="Doctor ID"
+                            className="border rounded p-2 w-full"
+                        />
+                        <h3 style={{ textAlign: "center" }}>---Or Date Range---</h3>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <label className="block">
+                                Start Date :
+                                <DatePicker
+                                    selected={bulkStartDate}
+                                    onChange={(date) => setBulkStartDate(date)}
+                                    className="border rounded p-2 w-full"
+                                    dateFormat="yyyy-MM-dd"
+                                />
+                            </label>
+                            <label className="block">
+                                End Date :
+                                <DatePicker
+                                    selected={bulkEndDate}
+                                    onChange={(date) => setBulkEndDate(date)}
+                                    className="border rounded p-2 w-full"
+                                    dateFormat="yyyy-MM-dd"
+                                />
+                            </label>
+                        </div>
+
+                        <button
+                            onClick={bulkDeleteSlot}
+                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                        >
+                            Bulk Delete Slots
                         </button>
                     </div>
                 );
@@ -251,46 +503,10 @@ function AdminSlotPage() {
                             className="block w-full text-sm text-gray-500"
                         />
                         <button
-                            onClick={handleSubmit}
+                            onClick={importCSV}
                             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                         >
                             Import CSV
-                        </button>
-                    </div>
-                );
-            case "bulkUpdate":
-                return (
-                    <div className="space-y-4">
-                        <label className="block">
-                            New Duration (minutes):
-                            <input
-                                type="number"
-                                value={duration}
-                                onChange={(e) => setDuration(e.target.value)}
-                                className="border rounded p-2 w-full"
-                            />
-                        </label>
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-                        >
-                            Bulk Update Duration
-                        </button>
-                    </div>
-                );
-            case "bulkDelete":
-                return (
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            placeholder="Doctor ID or Date Range"
-                            className="border rounded p-2 w-full"
-                        />
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                        >
-                            Bulk Delete Slots
                         </button>
                     </div>
                 );
@@ -307,18 +523,52 @@ function AdminSlotPage() {
                         <img src="https://flowbite.com/docs/images/logo.svg" className="h-8" alt="Flowbite Logo" />
                         <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Admin</span>
                     </a>
+
                     <div className="flex items-center space-x-6 rtl:space-x-reverse">
-                        <a href="tel:5541251234" className="text-sm text-gray-500 dark:text-white hover:underline">(555) 412-1234</a>
-                        <a href="#" className="text-sm text-blue-600 dark:text-blue-500 hover:underline">Login</a>
+                        <a href="tel:5541251234" className="text-sm text-gray-500 dark:text-white hover:underline">
+                            (555) 412-1234
+                        </a>
+
+                        {/* Avatar Dropdown */}
+                        <div className="relative group">
+                            <img
+                                src="https://i.pravatar.cc/40?img=12" // Replace with user's image if available
+                                className="w-10 h-10 rounded-full cursor-pointer border-2 border-blue-500"
+                                alt="User Avatar"
+                            />
+                            <div className="absolute right-0 mt-1 w-64 bg-white rounded-md shadow-lg p-4 z-50 hidden group-hover:block">
+                                <div className="text-center">
+                                    <img
+                                        src="https://i.pravatar.cc/80?img=12"
+                                        className="w-16 h-16 rounded-full mx-auto mb-2 border"
+                                        alt="User Avatar Large"
+                                    />
+                                    <h4 className="text-lg font-semibold text-gray-800">Atabur Rahaman</h4>
+                                    <p className="text-sm text-gray-500">rehman.khan@easyatech.com</p>
+                                </div>
+                                <div className="mt-4 space-y-2">
+                                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-700">
+                                        Edit Profile
+                                    </button>
+                                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-700">
+                                        Settings
+                                    </button>
+                                    <button className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md text-sm text-red-500">
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nav>
 
+            {/* Landing page */}
             <div className="p-6 max-w-4xl mx-auto space-y-6">
                 <h2 className="text-2xl font-semibold text-center text-gray-800">🩺 Admin Slot Management</h2>
 
                 <div className="flex flex-wrap justify-center gap-2">
-                    {["create", "bulkCreate", "update", "delete", "bulkUpdate", "bulkDelete", "import"].map((tab) => (
+                    {["create", "bulkCreate", "update", "bulkUpdate", "delete", "bulkDelete", "import"].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}

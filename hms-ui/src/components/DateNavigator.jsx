@@ -20,10 +20,9 @@ function DateNavigator() {
         <div
           key={d.date}
           className={`min-w-[60px] text-center p-2 rounded-xl cursor-pointer border transition-all
-            ${
-              selected === d.date
-                ? "bg-purple-600 text-white border-purple-600"
-                : "bg-white text-gray-700 border-gray-300"
+            ${selected === d.date
+              ? "bg-purple-600 text-white border-purple-600"
+              : "bg-white text-gray-700 border-gray-300"
             }`}
           onClick={() => setSelected(d.date)}
         >
