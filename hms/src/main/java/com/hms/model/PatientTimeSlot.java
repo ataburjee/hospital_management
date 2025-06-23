@@ -26,7 +26,7 @@ public class PatientTimeSlot {
     @Enumerated(EnumType.STRING)
     private SlotStatus slotStatus;
 
-    @OneToOne(mappedBy = "timeSlot")
+    @OneToOne(mappedBy = "patientTimeSlot")
     private Patient patient;
 
     private int queueNumber;
